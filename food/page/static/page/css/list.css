@@ -2,3 +2,7 @@
     background: #0000;
     border: none;
 }
+
+.delete-food {
+    cursor: pointer;
+}
