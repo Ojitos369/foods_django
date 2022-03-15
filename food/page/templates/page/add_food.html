@@ -1,0 +1,44 @@
+{% extends 'page/base.html' %}
+{% load static %}
+
+{% block styles %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'page/css/alerts.css' %}">
+{% endblock styles %}
+
+{% block title %}
+Agregar comida
+{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-4">
+        <h1 class="col text-center">
+            Agregar comida para {{ user.username }}
+        </h1>
+    </div>
+    {% if message %}
+    <div class="row d-flex justify-content-center" id="message">
+        <div class="alert alert-success text-center" role="alert">
+            {{ message }}
+        </div>
+    </div>
+    {% endif %}
+    <div class="row container d-flex justify-content-center">
+        <form action="{% url 'page:add_food' user.id %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="user_id" id="user_id" value="{{ user.id }}" hidden>
+            <div class="container">
+                <div class="row d-flex justify-content-center">
+                    <input type="text" class="form-control col" id="food" name="food" required placeholder="Nueva Comida" required>
+                </div>
+            </div>
+            <div class="row d-flex justify-content-evenly mt-3">
+                <button type="submit" class="btn btn-success col-4">Agregar</button>
+                <a href="{% url 'page:foods' user.id %}" class="btn btn-primary col-4">Finalizar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}
