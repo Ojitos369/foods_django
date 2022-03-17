@@ -2,8 +2,14 @@ from django.shortcuts import render
 from django.http import (
     HttpResponseRedirect
 )
+
 from django.urls import (
-    reverse
+    reverse,
+    reverse_lazy
+)
+
+from django.views.generic import (
+    FormView
 )
 
 from .models import *
@@ -59,7 +65,7 @@ def foods(request, user_id):
     return render(request, 'page/foods.html', context = context)
 
 
-def add_food(request, user_id):
+"""def add_food(request, user_id):
     user = User.objects.filter(id = user_id)[0]
     context = {
         'user': user
@@ -79,3 +85,32 @@ def add_food(request, user_id):
             }
             return render(request, 'page/add_food.html', context = context)
     return render(request, 'page/add_food.html', context = context)
+"""
+
+class AddFood(FormView):
+    template_name = 'page/add_food.html'
+    form_class = FoodForm
+    success_url = ''
+    message = {
+        'message': None
+    }
+
+    def form_valid(self, form, **kwargs):
+        data = form.cleaned_data
+        food = data['food']
+        user_id = data['user_id']
+        self.success_url = reverse_lazy('page:add_food', args=(user_id,))
+        user = User.objects.filter(id = user_id)[0]
+        food = Food(user = user, food = food)
+        food.save()
+        self.message['message'] = f"Se agrego {food.food} a las comidas de {user.username}"
+        
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_id = self.kwargs['user_id']
+        context['user'] = User.objects.filter(id = user_id)[0]
+        if self.message['message']:
+            context['message'] = self.message['message']
+        return context
