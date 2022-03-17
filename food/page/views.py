@@ -1,5 +1,3 @@
-from ast import Del
-from re import template
 from django.shortcuts import render
 from django.http import (
     HttpResponseRedirect
@@ -44,6 +42,7 @@ from .forms import UserForm, FoodForm, DelFoodForm
     return render(request, 'page/index.html')
 """
 
+
 class IndexView(FormView):
     template_name = 'page/index.html'
     form_class = UserForm
@@ -71,7 +70,7 @@ class IndexView(FormView):
         return super().form_valid(form)
 
 
-def foods(request, user_id):
+"""def foods(request, user_id):
     user = User.objects.filter(id = user_id)[0]
     context = {
         'user': user
@@ -87,6 +86,7 @@ def foods(request, user_id):
     foods = Food.objects.filter(user = user_id)
     context['foods'] = foods
     return render(request, 'page/foods.html', context = context)
+"""
 
 
 class FoodView(FormView):
