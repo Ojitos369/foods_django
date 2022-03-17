@@ -8,3 +8,7 @@ class UserForm(forms.Form):
 class FoodForm(forms.Form):
     food = forms.CharField(label='Food', max_length=100)
     user_id = forms.IntegerField(label='user_id')
+    
+
+class DelFoodForm(forms.Form):
+    food_id = forms.IntegerField(label='food_id')

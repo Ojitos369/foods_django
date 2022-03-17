@@ -1,3 +1,5 @@
+from ast import Del
+from re import template
 from django.shortcuts import render
 from django.http import (
     HttpResponseRedirect
@@ -13,10 +15,10 @@ from django.views.generic import (
 )
 
 from .models import *
-from .forms import UserForm, FoodForm
+from .forms import UserForm, FoodForm, DelFoodForm
 
 # Create your views here.
-def index(request):
+"""def index(request):
     if request.method == 'POST':
         userForm = UserForm(request.POST)
         
@@ -39,12 +41,34 @@ def index(request):
             user = User.objects.filter(email=email)[0]
             
             return HttpResponseRedirect(reverse('page:foods', args=(user.id,)))
-        else:
-            context = {
-                'title': 'Error'
-            }
-            return render(request, 'page/index.html', context = context)
     return render(request, 'page/index.html')
+"""
+
+class IndexView(FormView):
+    template_name = 'page/index.html'
+    form_class = UserForm
+    success_url = ''
+    
+    def form_valid(self, form):
+        data = form.cleaned_data
+        username = data['username']
+        email = data['email'].lower()
+        
+        user = User.objects.filter(email=email)
+        
+        if len(user) == 0:
+            user = User(username=username, email=email)
+            user.save()
+        else:
+            user = user[0]
+            user.username = username
+            user.save()
+        
+        user = User.objects.filter(email=email)[0]
+        
+        self.success_url = reverse('page:foods', args=(user.id,))
+        
+        return super().form_valid(form)
 
 
 def foods(request, user_id):
@@ -63,6 +87,39 @@ def foods(request, user_id):
     foods = Food.objects.filter(user = user_id)
     context['foods'] = foods
     return render(request, 'page/foods.html', context = context)
+
+
+class FoodView(FormView):
+    template_name = 'page/foods.html'
+    form_class = DelFoodForm
+    success_url = ''
+    message = {
+        'message': None,
+    }
+    
+    def form_valid(self, form):
+        data = form.cleaned_data
+        food_id = data['food_id']
+        food = Food.objects.filter(id = food_id)[0]
+        food_name = food.food
+        user = food.user
+        food.delete()
+        
+        self.success_url = reverse('page:foods', args=(user.id,))
+        
+        self.message['message'] = f"Se elimino {food_name} de las comidas de {user.username}"
+        
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_id = self.kwargs['user_id']
+        foods = Food.objects.filter(user = user_id)
+        context['user'] = User.objects.filter(id = user_id)[0]
+        context['foods'] = foods
+        if self.message['message']:
+            context['message'] = self.message['message']
+        return context
 
 
 """def add_food(request, user_id):
@@ -95,7 +152,7 @@ class AddFood(FormView):
         'message': None
     }
 
-    def form_valid(self, form, **kwargs):
+    def form_valid(self, form):
         data = form.cleaned_data
         food = data['food']
         user_id = data['user_id']
