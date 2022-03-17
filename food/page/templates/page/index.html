@@ -1,7 +1,11 @@
 {% extends 'page/base.html' %}
 
 {% block title %}
-Ingresar
+    {% if title %}
+        {{ block.super }}
+    {% else %}
+        Ingresar
+    {% endif %}
 {% endblock title %}
 
 {% block content %}
@@ -13,12 +17,12 @@ Ingresar
         <form action="{% url 'page:index' %}" method="post">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="username" class="form-label">Name</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+                <label for="username" class="form-label"></label>
+                <input type="text" class="form-control" id="username" name="username" required placeholder="Name">
             </div>
             <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" required>
+                <label for="email" class="form-label"></label>
+                <input type="email" class="form-control" id="email" name="email" required placeholder="Email">
             </div>
             <button type="submit" class="btn btn-primary col-10 offset-1 mt-3">Ir</button>
         </form>

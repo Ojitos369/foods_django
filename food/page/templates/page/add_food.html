@@ -6,8 +6,13 @@
 <link rel="stylesheet" href="{% static 'page/css/alerts.css' %}">
 {% endblock styles %}
 
+
 {% block title %}
-Agregar comida
+    {% if title %}
+        {{ block.super }}
+    {% else %}
+        Agregar Comida
+    {% endif %}
 {% endblock title %}
 
 {% block content %}

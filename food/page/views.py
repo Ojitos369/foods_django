@@ -7,31 +7,37 @@ from django.urls import (
 )
 
 from .models import *
-from .forms import UserForm
+from .forms import UserForm, FoodForm
 
 # Create your views here.
 def index(request):
     if request.method == 'POST':
+        userForm = UserForm(request.POST)
+        
+        if userForm.is_valid():
+            data = userForm.cleaned_data
+            print(data)
+            username = data['username']
+            email = data['email'].lower()
             
-        data = dict(request.POST)
-        print(data)
-        username = data['username'][0]
-        email = data['email'][0].lower()
-        
-        user = User.objects.filter(email=email)
-        
-        if len(user) == 0:
-            user = User(username=username, email=email)
-            user.save()
+            user = User.objects.filter(email=email)
+            
+            if len(user) == 0:
+                user = User(username=username, email=email)
+                user.save()
+            else:
+                user = user[0]
+                user.username = username
+                user.save()
+            
+            user = User.objects.filter(email=email)[0]
+            
+            return HttpResponseRedirect(reverse('page:foods', args=(user.id,)))
         else:
-            user = user[0]
-            user.username = username
-            user.save()
-        
-        user = User.objects.filter(email=email)
-        user = user[0]
-        
-        return HttpResponseRedirect(reverse('page:foods', args=(user.id,)))
+            context = {
+                'title': 'Error'
+            }
+            return render(request, 'page/index.html', context = context)
     return render(request, 'page/index.html')
 
 
@@ -59,11 +65,17 @@ def add_food(request, user_id):
         'user': user
     }
     if request.method == 'POST':
-        data = dict(request.POST)
-        print(data)
-        food = data['food'][0]
-        user_id = data['user_id'][0]
-        food = Food(user = user, food = food)
-        food.save()
-        context['message'] = f"Se agrego {food.food} a las comidas de {user.username}"
+        foodForm = FoodForm(request.POST)
+        if foodForm.is_valid():
+            data = foodForm.cleaned_data
+            food = data['food']
+            user_id = data['user_id']
+            food = Food(user = user, food = food)
+            food.save()
+            context['message'] = f"Se agrego {food.food} a las comidas de {user.username}"
+        else:
+            context = {
+                'title': 'Error'
+            }
+            return render(request, 'page/add_food.html', context = context)
     return render(request, 'page/add_food.html', context = context)
